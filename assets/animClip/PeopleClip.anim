@@ -1,0 +1,55 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "PeopleClip",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 0.5,
+  "sample": 10,
+  "speed": 1,
+  "wrapMode": 1,
+  "curveData": {
+    "comps": {
+      "cc.Sprite": {
+        "spriteFrame": [
+          {
+            "frame": 0,
+            "value": {
+              "__uuid__": "dc6f6ff1-9218-4e2c-acdd-017e7022a52c"
+            }
+          },
+          {
+            "frame": 0.1,
+            "value": {
+              "__uuid__": "9a761781-05d3-45b6-81df-74cb183a5912"
+            }
+          },
+          {
+            "frame": 0.2,
+            "value": {
+              "__uuid__": "c98c25d4-d167-4c42-925c-7c24dd160de8"
+            }
+          },
+          {
+            "frame": 0.3,
+            "value": {
+              "__uuid__": "26cd870d-9600-4773-9de3-dcd061537660"
+            }
+          },
+          {
+            "frame": 0.4,
+            "value": {
+              "__uuid__": "dc6f6ff1-9218-4e2c-acdd-017e7022a52c"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "events": [
+    {
+      "frame": 0,
+      "func": "",
+      "params": []
+    }
+  ]
+}
