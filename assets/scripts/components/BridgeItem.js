@@ -91,11 +91,11 @@ cc.Class({
    * 1.小人开始动画 并且开始移动
    */
   rotateBridgeEnd(){
-    console.log('rotate-end',this.node);
+    // console.log('rotate-end',this.node);
     // 桥最右端的x坐标
-    const bridgeRightX = this.node.x + this.node.height
-    console.log('bridgeRightX',bridgeRightX);
-    console.log('step',step);
+    // const bridgeRightX = this.node.x + this.node.height
+    // console.log('bridgeRightX',bridgeRightX);
+    // console.log('step',step);
     this.games.peopleStartRun(this.node.height)
   }
 });
