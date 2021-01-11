@@ -51,6 +51,10 @@ cc.Class({
       default: null,
       type: cc.Prefab
     },
+    gameBg: {
+      default: null,
+      type: cc.Node
+    }
   },
 
   // LIFE-CYCLE CALLBACKS:
@@ -87,28 +91,123 @@ cc.Class({
 
   /** 自定义方法 */
 
-  /**人开始过桥
-   * @param {*} bridgeHeight : 桥动态高度
+  /**人物开始走之前判断
+   * @param {*} bridgeNode : 桥实例
+   * 1.判断桥位置是否到达对岸
+   * ->到达则开始下一轮；否则结束游戏
    */
-  peopleStartRun(bridgeHeight) {
-    const runVal = bridgeHeight + this.peopleMain.width/2
-    const runFinishCallback = cc.callFunc(this.starRunFinish, this)
-    var seq = cc.sequence(cc.moveBy(1, cc.v2(runVal, 2)), null, runFinishCallback);
+  runBefore(bridgeNode) {
+    this.bridgeNode = bridgeNode  // 赋值全局变量
+    // 
+    const nextStepPos = this.nextStep
+    const bridgeArrive = this.bridgeNode.x + this.bridgeNode.height
+    console.log('bridgeNode', bridgeArrive);
+    console.log('nextStepPos', this.nextStep.x, this.nextStep.width);
+    let runWidth = 0;
+    let status = null;
+    // 如果桥当前位置在第二个台阶宽度的区间
+    if (bridgeArrive >= nextStepPos.x && bridgeArrive < (this.nextStep.x + this.nextStep.width)) {
+      // 过桥成功
+      console.log('成功过桥');
+      runWidth = (this.nextStep.x - this.bridgeNode.x) + this.nextStep.width / 2
+      status = true
+    } else {
+      // 过桥失败
+      console.log('过桥失败');
+      runWidth = this.bridgeNode.height + this.peopleMain.width / 1.5
+    }
+    this.peopleStartRun(runWidth, status)
+  },
+  /**人开始过桥
+   * @param {*} runWidth : 人需要走的距离
+   * @param {*} status : 成功/失败
+   */
+  peopleStartRun(runWidth, status) {
+    // this.bridgeNode = bridgeNode  // 赋值全局变量
+    const runFinishCallback = cc.callFunc(this.starRunFinish, this, status)
+    var seq = cc.sequence(cc.moveBy(1, cc.v2(runWidth, 2)), null, runFinishCallback);
     this.peopleMain.runAction(seq);
     this.peopleMain.getComponent('People').peopleRun()
   },
   /**走完回调
    * 1.停止人物动画
    * 2.判断人物是否到达指定位置
+   * @param {*} status : 成功/失败
    */
-  starRunFinish() {
+  starRunFinish(target, status) {
     // 停止人物动画
     this.peopleMain.getComponent('People').peopleStopRun()
     // 人物位置
     const peopleCurPos = this.peopleMain.getPosition()
-    const nextBridgePos = this.nextBridge.getPosition()
-    console.log('peopleCurPos', peopleCurPos.x);
-    console.log('nextBridgePos', nextBridgePos.x);
+    console.log('starRunFinish', status);
+
+    if (status) { // 成功
+      this.successGoStep()
+      return
+    }
+    /**失败
+     * 1.小人掉坑去
+     * 2.切换游戏失败场景
+     */
+    this.peopleFallOff()  // 小人掉坑去
+  },
+  /**
+   * 1.销毁第一个台阶
+   * 2.第二个台阶和人物的位置调整到最左侧
+   * 3.将当前第二个台阶变成当前台阶，继续生成下一个台阶
+   */
+  successGoStep(){
+    // 销毁
+    this.curStep.destroy()
+    const initX = -(this.node.width/2 + this.nextStep.x)
+    // 第二个桥
+    var seq = cc.sequence(
+      cc.moveBy(0.5, cc.v2(initX, 0)), null, cc.callFunc(()=>{
+        // 3.生成下一个
+      }, this.nextStep));
+    this.nextStep.runAction(seq);
+    console.log('initw',initX);
+    
+    // 人物
+    const peopleInitX = initX+this.peopleMain.width/3*2
+    // console.log('peopleInitX',peopleInitX);
+    var seq = cc.sequence(
+      cc.moveBy(0.5, cc.v2(peopleInitX, 0)), cc.callFunc(()=>{
+        // 3.生成下一个
+      }, this.nextStep));
+    this.peopleMain.runAction(seq);
+    // 桥
+    this.bridgeNode.destroy()
+    // console.log('this.bridgeNode',this.bridgeNode);
+    
+    // return
+    // let peopleInitX = initX+this.peopleMain.width/3*2
+    // var seq = cc.sequence(
+    //   cc.moveBy(0.5, cc.v2(peopleInitX, 0)), null);
+    // this.bridgeNode.runAction(seq);
+  },
+  // 小人掉坑去
+  peopleFallOff() {
+    const gameOverCallback = cc.callFunc(this.gameOverCallback, this)
+    var seq = cc.sequence(cc.moveBy(0.5, cc.v2(2, this.peopleMain.y - this.nextStep.height)), null, gameOverCallback);
+    this.peopleMain.runAction(seq);
+  },
+  // 游戏结束
+  gameOverCallback() {
+    this.peopleDrop()
+    cc.director.loadScene("GameOver");// 游戏结束-第三场景
+  },
+  // 小人掉坑去
+  peopleDrop() {
+    let y = this.gameBg.y;
+    let action = cc.sequence(
+      cc.moveTo(0.018, cc.v2(0, y - 20)),
+      cc.moveTo(0.018, cc.v2(0, y)),
+      cc.callFunc(() => {
+        this.gameBg.stopAction(action); // 停止动画
+      }, this)
+    )
+    this.gameBg.runAction(action);
   },
   // 初始化人物位置
   initPeople(step) {
@@ -127,8 +226,6 @@ cc.Class({
     nBridge.setPosition(cc.v2(bridgeX, bridgeY))
     // console.log('footStepPreFab',step.height);
     nBridge.getComponent('BridgeItem').initial(this)
-    // 下一个桥全局定义
-    this.nextBridge = nBridge
   },
   // 生成台阶 
   newStep() {
@@ -136,13 +233,21 @@ cc.Class({
     this.node.addChild(nStep);
     const stepY = -this.node.height / 2
     nStep.setPosition(cc.v2(-this.node.width / 2, stepY));
-    // console.log('nstep',this.node.height/2 , nStep.height);
+    // 当前台阶全局定义
+    this.curStep = nStep
+    
+    this.createNewStep()  // 生成下一个台阶
+    this.newBridge(nStep); // 生成桥
+    this.initPeople(nStep)  // 生成人物
+  },
+  // 初始化生成下一个台阶
+  createNewStep(){
     const nStep2 = cc.instantiate(this.footStepPreFab);
     this.node.addChild(nStep2);
     nStep2.setPosition(this.setNewStepPostion());
-    // setPosition
-    this.newBridge(nStep); // 生成桥
-    this.initPeople(nStep)
+    // 下一个台阶全局定义
+    this.nextStep = nStep2
+    console.log('nStep2',nStep2);
   },
   // 台阶位置
   setNewStepPostion() {

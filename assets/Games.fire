@@ -1248,6 +1248,9 @@
     "peoplePreFab": {
       "__uuid__": "3960f5f3-c08e-4c5c-b875-acaa7e0ca6ac"
     },
+    "gameBg": {
+      "__id__": 5
+    },
     "_id": "ffVXaFQiNCg4yWWSKDWRh3"
   }
 ]
