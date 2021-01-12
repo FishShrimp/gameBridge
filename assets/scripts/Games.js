@@ -79,6 +79,8 @@ cc.Class({
   },
 
   update(dt) {
+    // console.log('dt',dt*60);
+    
     if (this.curDuration < 0) {
       this.timeVal.string = 0
       return
@@ -100,7 +102,7 @@ cc.Class({
     this.bridgeNode = bridgeNode  // 赋值全局变量
     // 
     const nextStepPos = this.nextStep
-    const bridgeArrive = this.bridgeNode.x + this.bridgeNode.height
+    const bridgeArrive = this.bridgeNode.x + this.bridgeNode.height+this.bridgeNode.width/3
     console.log('bridgeNode', bridgeArrive);
     console.log('nextStepPos', this.nextStep.x, this.nextStep.width);
     let runWidth = 0;
@@ -125,7 +127,7 @@ cc.Class({
   peopleStartRun(runWidth, status) {
     // this.bridgeNode = bridgeNode  // 赋值全局变量
     const runFinishCallback = cc.callFunc(this.starRunFinish, this, status)
-    var seq = cc.sequence(cc.moveBy(1, cc.v2(runWidth, 2)), null, runFinishCallback);
+    var seq = cc.sequence(cc.moveBy(1, cc.v2(runWidth, 0)), null, runFinishCallback);
     this.peopleMain.runAction(seq);
     this.peopleMain.getComponent('People').peopleRun()
   },
@@ -156,30 +158,33 @@ cc.Class({
    * 2.第二个台阶和人物的位置调整到最左侧
    * 3.将当前第二个台阶变成当前台阶，继续生成下一个台阶
    */
-  successGoStep(){
-    // 销毁
-    this.curStep.destroy()
-    const initX = -(this.node.width/2 + this.nextStep.x)
-    // 第二个桥
+  successGoStep() {
+    const leftRunTime = .5
+    // 第一个台阶左移隐藏
+    this.curStep.runAction(cc.moveBy(leftRunTime, cc.v2(-this.curStep.width, 0)));
+    // 桥左移隐藏
+    this.bridgeNode.runAction(cc.moveBy(leftRunTime, cc.v2(-(this.bridgeNode.height+this.curStep.width), 0)));
+    const initX = -(this.node.width / 2 + this.nextStep.x)
+    // 第二个台阶左移隐藏
     var seq = cc.sequence(
-      cc.moveBy(0.5, cc.v2(initX, 0)), null, cc.callFunc(()=>{
-        // 3.生成下一个
+      cc.moveBy(leftRunTime, cc.v2(initX, 0)), null, cc.callFunc(() => {
+        this.curStep.destroy()          // 销毁第一个台阶
+        this.bridgeNode.destroy()       // 销毁桥
+        this.curStep = this.nextStep    // 将第二个台阶换成第一个台阶
+        this.createNewStep()            // 生成下一个台阶
+        this.newBridge(this.nextStep);  // 生成桥
       }, this.nextStep));
     this.nextStep.runAction(seq);
-    console.log('initw',initX);
-    
+
     // 人物
-    const peopleInitX = initX+this.peopleMain.width/3*2
+    const peopleInitX = -(this.node.width / 2 + this.peopleMain.x) 
     // console.log('peopleInitX',peopleInitX);
     var seq = cc.sequence(
-      cc.moveBy(0.5, cc.v2(peopleInitX, 0)), cc.callFunc(()=>{
-        // 3.生成下一个
+      cc.moveBy(leftRunTime, cc.v2(peopleInitX, 0)), cc.callFunc(() => {
       }, this.nextStep));
     this.peopleMain.runAction(seq);
-    // 桥
-    this.bridgeNode.destroy()
     // console.log('this.bridgeNode',this.bridgeNode);
-    
+
     // return
     // let peopleInitX = initX+this.peopleMain.width/3*2
     // var seq = cc.sequence(
@@ -218,14 +223,16 @@ cc.Class({
   },
   // 生成桥
   newBridge(step) {
-    // bridgePreFab
     const nBridge = cc.instantiate(this.bridgePreFab)
     this.node.addChild(nBridge)
-    const bridgeX = -this.node.width / 2 + step.width - (nBridge.width / 2)
-    const bridgeY = (-this.node.height / 2) + step.height
+    const bridgeX = -this.node.width / 2 + step.width - nBridge.width / 3
+    const bridgeY = (-this.node.height / 2) + step.height - nBridge.width
     nBridge.setPosition(cc.v2(bridgeX, bridgeY))
     // console.log('footStepPreFab',step.height);
     nBridge.getComponent('BridgeItem').initial(this)
+    console.log('newBridge', nBridge);
+
+
   },
   // 生成台阶 
   newStep() {
@@ -235,19 +242,19 @@ cc.Class({
     nStep.setPosition(cc.v2(-this.node.width / 2, stepY));
     // 当前台阶全局定义
     this.curStep = nStep
-    
+
     this.createNewStep()  // 生成下一个台阶
     this.newBridge(nStep); // 生成桥
     this.initPeople(nStep)  // 生成人物
   },
   // 初始化生成下一个台阶
-  createNewStep(){
+  createNewStep() {
     const nStep2 = cc.instantiate(this.footStepPreFab);
     this.node.addChild(nStep2);
     nStep2.setPosition(this.setNewStepPostion());
     // 下一个台阶全局定义
     this.nextStep = nStep2
-    console.log('nStep2',nStep2);
+    // console.log('nStep2',nStep2);
   },
   // 台阶位置
   setNewStepPostion() {

@@ -85,6 +85,7 @@ cc.Class({
   // touchend之后：禁用当前节点并旋转90度搭桥
   rotateBridge() {
     this.enabled = false
+    // this.games.enabled = false
     const callback = cc.callFunc(this.rotateBridgeEnd, this)
     var _v3 = cc.sequence(cc.rotateTo(0.5, 90), callback);//旋转90度
     this.node.runAction(_v3);
