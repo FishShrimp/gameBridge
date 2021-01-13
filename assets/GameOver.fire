@@ -180,7 +180,7 @@
       "array": [
         0,
         0,
-        329.9418198163821,
+        252.8794179050561,
         0,
         0,
         0,
@@ -613,7 +613,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "New Label",
+    "_name": "TotalScore",
     "_objFlags": 0,
     "_parent": {
       "__id__": 12
@@ -849,6 +849,9 @@
     "_enabled": true,
     "gameAgain": {
       "__id__": 7
+    },
+    "totalScore": {
+      "__id__": 14
     },
     "_id": "064RtPk4JEJJtShIolcYPT"
   }

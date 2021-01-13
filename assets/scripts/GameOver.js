@@ -5,28 +5,37 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
+const COM = require("common");
+
 cc.Class({
-    extends: cc.Component,
+  extends: cc.Component,
 
-    properties: {
-        gameAgain: {
-          default:null,
-          type: cc.Node
-        }
+  properties: {
+    gameAgain: {
+      default: null,
+      type: cc.Node
     },
-
-    // LIFE-CYCLE CALLBACKS:
-
-    // onLoad () {},
-
-    start () {
-
-    },
-
-    // update (dt) {},
-
-    /** 自定义 */
-    againGame() {
-      cc.director.loadScene("Games");
+    totalScore: {
+      default: null,
+      type: cc.Label
     }
+  },
+
+  // LIFE-CYCLE CALLBACKS:
+
+  onLoad() {
+    // 全局分数赋值
+    this.totalScore.string = COM.scoreRecord
+  },
+
+  start() {
+
+  },
+
+  // update (dt) {},
+
+  /** 自定义 */
+  againGame() {
+    cc.director.loadScene("Games");
+  }
 });

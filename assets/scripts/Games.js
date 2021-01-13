@@ -5,6 +5,8 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
+const COM = require("common");
+
 cc.Class({
   extends: cc.Component,
 
@@ -54,7 +56,12 @@ cc.Class({
     gameBg: {
       default: null,
       type: cc.Node
-    }
+    },
+    // 得分
+    scoreStr: {
+      default: null,
+      type: cc.Label
+    },
   },
 
   // LIFE-CYCLE CALLBACKS:
@@ -63,6 +70,7 @@ cc.Class({
     // this.curDuration = 0
     this.curDuration = this.gameDuration
     this.timeVal.string = this.curDuration
+    this.scoreNum = 0
     console.log('timeVal', this.timeVal);
     this.newStep(); // 生成第一个台阶
 
@@ -80,7 +88,7 @@ cc.Class({
 
   update(dt) {
     // console.log('dt',dt*60);
-    
+
     if (this.curDuration < 0) {
       this.timeVal.string = 0
       return
@@ -102,7 +110,7 @@ cc.Class({
     this.bridgeNode = bridgeNode  // 赋值全局变量
     // 
     const nextStepPos = this.nextStep
-    const bridgeArrive = this.bridgeNode.x + this.bridgeNode.height+this.bridgeNode.width/3
+    const bridgeArrive = this.bridgeNode.x + this.bridgeNode.height + this.bridgeNode.width / 3
     console.log('bridgeNode', bridgeArrive);
     console.log('nextStepPos', this.nextStep.x, this.nextStep.width);
     let runWidth = 0;
@@ -113,6 +121,9 @@ cc.Class({
       console.log('成功过桥');
       runWidth = (this.nextStep.x - this.bridgeNode.x) + this.nextStep.width / 2
       status = true
+      // 得分+1
+      this.scoreNum += 1
+      this.scoreStr.string = this.scoreNum
     } else {
       // 过桥失败
       console.log('过桥失败');
@@ -152,6 +163,8 @@ cc.Class({
      * 2.切换游戏失败场景
      */
     this.peopleFallOff()  // 小人掉坑去
+    // this.scoreNum += 1
+    // this.scoreStr.string = this.scoreNum
   },
   /**
    * 1.销毁第一个台阶
@@ -163,7 +176,7 @@ cc.Class({
     // 第一个台阶左移隐藏
     this.curStep.runAction(cc.moveBy(leftRunTime, cc.v2(-this.curStep.width, 0)));
     // 桥左移隐藏
-    this.bridgeNode.runAction(cc.moveBy(leftRunTime, cc.v2(-(this.bridgeNode.height+this.curStep.width), 0)));
+    this.bridgeNode.runAction(cc.moveBy(leftRunTime, cc.v2(-(this.bridgeNode.height + this.curStep.width), 0)));
     const initX = -(this.node.width / 2 + this.nextStep.x)
     // 第二个台阶左移隐藏
     var seq = cc.sequence(
@@ -177,7 +190,7 @@ cc.Class({
     this.nextStep.runAction(seq);
 
     // 人物
-    const peopleInitX = -(this.node.width / 2 + this.peopleMain.x) 
+    const peopleInitX = -(this.node.width / 2 + this.peopleMain.x)
     // console.log('peopleInitX',peopleInitX);
     var seq = cc.sequence(
       cc.moveBy(leftRunTime, cc.v2(peopleInitX, 0)), cc.callFunc(() => {
@@ -200,7 +213,7 @@ cc.Class({
   // 游戏结束
   gameOverCallback() {
     this.peopleDrop()
-    cc.director.loadScene("GameOver");// 游戏结束-第三场景
+    COM.scoreRecord = this.scoreStr.string;
   },
   // 小人掉坑去
   peopleDrop() {
@@ -210,9 +223,16 @@ cc.Class({
       cc.moveTo(0.018, cc.v2(0, y)),
       cc.callFunc(() => {
         this.gameBg.stopAction(action); // 停止动画
+        this.gameOverAfterHandle()
       }, this)
     )
     this.gameBg.runAction(action);
+  },
+  /**游戏失败后操作
+   * 1.切换场景
+   */
+  gameOverAfterHandle() {
+    cc.director.loadScene("GameOver");// 游戏结束-第三场景
   },
   // 初始化人物位置
   initPeople(step) {
