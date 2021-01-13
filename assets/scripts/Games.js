@@ -83,14 +83,13 @@ cc.Class({
   },
 
   start() {
-    console.log('gameDuration', this.gameDuration);
+    // console.log('gameDuration', this.gameDuration);
   },
 
   update(dt) {
-    // console.log('dt',dt*60);
-
     if (this.curDuration < 0) {
       this.timeVal.string = 0
+      this.gameOverAfterHandle()
       return
     }
     this.timeVal.string = Math.ceil(this.curDuration)
@@ -111,8 +110,8 @@ cc.Class({
     // 
     const nextStepPos = this.nextStep
     const bridgeArrive = this.bridgeNode.x + this.bridgeNode.height + this.bridgeNode.width / 3
-    console.log('bridgeNode', bridgeArrive);
-    console.log('nextStepPos', this.nextStep.x, this.nextStep.width);
+    // console.log('bridgeNode', bridgeArrive);
+    // console.log('nextStepPos', this.nextStep.x, this.nextStep.width);
     let runWidth = 0;
     let status = null;
     // 如果桥当前位置在第二个台阶宽度的区间
@@ -204,19 +203,16 @@ cc.Class({
     //   cc.moveBy(0.5, cc.v2(peopleInitX, 0)), null);
     // this.bridgeNode.runAction(seq);
   },
-  // 小人掉坑去
+  /**小人掉坑去
+   * 1.屏幕抖动
+   */
   peopleFallOff() {
-    const gameOverCallback = cc.callFunc(this.gameOverCallback, this)
-    var seq = cc.sequence(cc.moveBy(0.5, cc.v2(2, this.peopleMain.y - this.nextStep.height)), null, gameOverCallback);
+    const callback = cc.callFunc(this.screenShakeCallback, this)
+    var seq = cc.sequence(cc.moveBy(0.5, cc.v2(2, this.peopleMain.y - this.nextStep.height)), null, callback);
     this.peopleMain.runAction(seq);
   },
-  // 游戏结束
-  gameOverCallback() {
-    this.peopleDrop()
-    COM.scoreRecord = this.scoreStr.string;
-  },
-  // 小人掉坑去
-  peopleDrop() {
+  // 屏幕抖动
+  screenShakeCallback() {
     let y = this.gameBg.y;
     let action = cc.sequence(
       cc.moveTo(0.018, cc.v2(0, y - 20)),
@@ -229,9 +225,11 @@ cc.Class({
     this.gameBg.runAction(action);
   },
   /**游戏失败后操作
-   * 1.切换场景
+   * 1.分数存储
+   * 2.切换场景
    */
   gameOverAfterHandle() {
+    COM.scoreRecord = this.scoreStr.string;
     cc.director.loadScene("GameOver");// 游戏结束-第三场景
   },
   // 初始化人物位置
