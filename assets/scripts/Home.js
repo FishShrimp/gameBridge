@@ -27,7 +27,7 @@ cc.Class({
     },
 
     start () {
-      console.log('startBtnWare',this.startBtnWare);
+      // 按钮波纹
       let action = cc.repeatForever(
         cc.sequence(cc.scaleTo(1, 0.8), cc.scaleTo(1, 1))
       );
