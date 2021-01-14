@@ -9,30 +9,29 @@ cc.Class({
     extends: cc.Component,
 
     properties: {
-        rulePage:{
+      // 规则背景
+      rulePage:{
+        default: null,
+        type: cc.Node
+      },
+      // 按钮水波纹
+        startBtnWare:{
           default: null,
           type: cc.Node
-        },
-        ruleScrollView:{
-          default:null,
-          type:cc.ScrollView
-        },
-        scrollContent:{
-          default:null,
-          type:cc.Node
-        },
-        scrollItem:{
-          default:null,
-          type:cc.Node
         }
     },
 
     // LIFE-CYCLE CALLBACKS:
 
-    // onLoad () {},
+    onLoad () {
+    },
 
     start () {
-      this.addRules();
+      console.log('startBtnWare',this.startBtnWare);
+      let action = cc.repeatForever(
+        cc.sequence(cc.scaleTo(1, 0.8), cc.scaleTo(1, 1))
+      );
+      this.startBtnWare.runAction(action);
     },
 
     update (dt) {},
@@ -52,22 +51,6 @@ cc.Class({
     backHome() {
       console.log('backHome');
       this.rulePage.active = false;
-      
-    },
-    addRules(){
-      const cList = [
-        {
-
-        }
-      ]
-      // console.log('cc',cc);
-      
-      for (let index = 0; index < 10; index++) {
-        // const item = array[index];
-        const sItem = cc.instantiate(this.scrollItem)
-        this.ruleScrollView.content.addChild(sItem)
-      }
-      console.log('view',this.ruleScrollView);
       
     }
 });
