@@ -51,8 +51,8 @@
       "__type__": "TypedArray",
       "ctor": "Float64Array",
       "array": [
-        0,
-        0,
+        -320,
+        -554,
         0,
         0,
         0,
@@ -118,6 +118,7 @@
     "_enabled": true,
     "bridgeCurHeight": 0,
     "bridgeTouchSpeed": 200,
+    "gameBg": null,
     "_id": ""
   },
   {

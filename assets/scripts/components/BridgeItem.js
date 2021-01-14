@@ -5,37 +5,25 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-const step = require('StepItem')
-
 cc.Class({
   extends: cc.Component,
 
   properties: {
-    bridgeCurHeight: 0,    // 桥最小高度
+    bridgeCurHeight: 0,             // 桥最小高度
     bridgeTouchSpeed: 1000          // 上升速度
   },
 
   // LIFE-CYCLE CALLBACKS:
 
-  onLoad() {
-    this.initial()
+  onLoad() {},
 
-    const curTouchReceiver = cc.Canvas.instance.node
-    curTouchReceiver.on('touchstart', this.onTouchStart, this)
-    curTouchReceiver.on('touchend', this.onTouchEnd, this)
-
-  },
-
-  start() {
-
-  },
+  start() {},
 
   update(dt) {
     // 移动大小
     const spt = dt * this.bridgeTouchSpeed
-    // touchstart
     if (this.isTouchStart === true) {
-      // console.log('start', this.isTouchStart,this.games);
+      // const maxW = games.node.width - games.nextStep.width
       const maxW = this.games.node.width - this.games.nextStep.width
       // 记录桥的增减方向：是向上还是向下
       if (this.node.height > maxW) {
@@ -59,33 +47,35 @@ cc.Class({
   initial(games) {
     this.games = games
     this.isTouchStart = null
-    this.isTouchEnd = null
     this.isDown = false // 是否向下
     this.node.height = 0
-    console.log('bridge-item-init',this.games);
-
+    // 设置触摸事件
+    this.curTouchReceiver = cc.Canvas.instance.node
+    this.curTouchReceiver.on('touchstart', this.onTouchStart, this)
+    this.curTouchReceiver.on('touchend', this.onTouchEnd, this)
+    this.curTouchReceiver.pauseSystemEvents();
+    this.recoveryTouch();    // 恢复桥的触摸事件
   },
   onTouchStart(event) {
-    // this.node.enable = true
     this.bridgeTouchSpeed = this.bridgeTouchSpeed + Math.random() * this.bridgeTouchSpeed
     this.isTouchStart = true
-    this.isTouchEnd = false
-    // 当前位置
-    const curPos = event.getLocation()
-    // curPos.x > cc.winSize.width / 2
-    // console.log('onTouchStart',event);
-    // console.log('curPos', curPos, this);
-
   },
   onTouchEnd(event) {
     this.isTouchStart = false
     this.rotateBridge()   // 开始搭桥
-
+    this.pauseTouch();    // 暂停触摸事件
+  },
+  // 暂停触摸事件
+  pauseTouch() {
+    this.curTouchReceiver.pauseSystemEvents();
+  },
+  // 恢复触摸事件
+  recoveryTouch() {
+    this.curTouchReceiver.resumeSystemEvents();
   },
   // touchend之后：禁用当前节点并旋转90度搭桥
   rotateBridge() {
     this.enabled = false
-    // this.games.enabled = false
     const callback = cc.callFunc(this.rotateBridgeEnd, this)
     var _v3 = cc.sequence(cc.rotateTo(0.5, 90), callback);//旋转90度
     this.node.runAction(_v3);
@@ -94,12 +84,6 @@ cc.Class({
    * 1.小人开始动画 并且开始移动
    */
   rotateBridgeEnd() {
-    // console.log('rotate-end',this.node);
-    // 桥最右端的x坐标
-    // const bridgeRightX = this.node.x + this.node.height
-    // console.log('bridgeRightX',bridgeRightX);
-    // console.log('step',step);
-    // this.games.peopleStartRun(this.node)
     this.games.runBefore(this.node)
   }
 });
